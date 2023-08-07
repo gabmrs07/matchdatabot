@@ -1,7 +1,7 @@
-import packages.requests
+import requests
 import time
 
-from packages.bs4 import BeautifulSoup
+from bs4 import BeautifulSoup
 from datetime import datetime
 from threading import Thread
 
