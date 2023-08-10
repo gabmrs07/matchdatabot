@@ -1,11 +1,10 @@
 possible_errors = {'-', ' -', '- ', ' - ', ' ', ''}
-not_conv = {'home_team', 'away_team', 'half_finished', 'handicap', 'league'}
+not_conv = {'home_team', 'away_team', 'half_finished', 'handicap', 'league', 'finished'}
 
 def match_formatter(matches):
 
     formatted_list = []
     for match in matches:
-
         get_error = False
         current_status = match.find('td', class_='match_status').find('span').text
 
@@ -34,6 +33,7 @@ def match_formatter(matches):
             'home_team': home_team,
             'away_team': away_team,
             'handicap': handicap,
+            'finished': "False",
             'home_score': score[0],
             'away_score': score[1],
             'home_corner': corners[0],
@@ -73,5 +73,6 @@ def match_formatter(matches):
         match['corners'] = match['home_corner'] + match['away_corner']
         match['shots'] = match['home_shot'] + match['away_shot']
         formatted_list.append(match)
+
 
     return formatted_list

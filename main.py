@@ -16,22 +16,32 @@ live_url = 'https://www.totalcorner.com/match/today/'
 ended_url = 'https://www.totalcorner.com/match/today/ended'
 
 
+def notify(analyzer, verbose, seconds=3600):
+    while True:
+        time.sleep(seconds)
+        verbose.telegram_info(analyzer)
 
 def background_ended_matches(analyzer, seconds=600):
     while True:
         time.sleep(seconds)
         try:
+            data = analyzer.matches
             response = requests.get(ended_url, headers = {
                 'User-Agent': 'Popular browser\'s user-agent',})
             soup = BeautifulSoup(response.content, 'html.parser')
             match_table = soup.find('tbody', class_='tbody_match')
-            matches_list = match_formatter(match_table.select('tr'))
+            matches_list = []
+            for match in match_formatter(match_table.select('tr')):
+                match_id = str(match['match_id'])
+                if match_id in data:
+                    if data[match_id]["finished"] == "False":
+                        matches_list.append(match)
             for match in matches_list:
-                analyzer.check(match)
+                analyzer.checker(match)
+            print(f'Partidas encerradas analisadas: {len(matches_list)}')
         except Exception as ex:
             ex_msg = f"Um erro ocorreu ao pegar as partidas em TotalCorner[Finished]: \nException: {ex}\n{ex.args}\n"
             print(ex_msg)
-            print(soup.text)
             print("Nova tentativa em 30 segundos...")
             time.sleep(30)
             continue
@@ -80,11 +90,13 @@ if __name__ == '__main__':
             continue
 
     analyzer = Analyzer(matches)
-    upload_thread = Thread(target=background_upload, args=(dbox, matches, analyzer))
+    upload_thread = Thread(target=background_upload, args=[dbox, matches, analyzer])
     upload_thread.start()
     ended_thread = Thread(target=background_ended_matches, args=[analyzer])
     ended_thread.start()
     verb = Verbose()
+    telegram_info_thread = Thread(target=notify, args=[analyzer, verb])
+    telegram_info_thread.start()
 
     while True:
         try:
@@ -96,13 +108,12 @@ if __name__ == '__main__':
         except Exception as ex:
             ex_msg = f"Um erro ocorreu ao pegar as partidas em TotalCorner: \nException: {ex}\n{ex.args}\n"
             print(ex_msg)
-            print(soup.text)
             print("Nova tentativa em 30 segundos...")
             time.sleep(30)
             continue
 
         matches_length = len(matches_list)
-        analyzer.lock()
+        analyzer.lock(matches_length)
         verb.start()
         for n, match in enumerate(matches_list, 1):
             verb.match_count(n, matches_length)

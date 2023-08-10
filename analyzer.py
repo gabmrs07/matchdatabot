@@ -2,10 +2,10 @@ import math
 #import unidecode
 from decimal import Decimal
 
-#from telegram_message import Bot
+from telegram_message import Bot
 
 end_times = {45, 90}
-former_keys = {'home_team', 'away_team', 'league'}
+former_keys = {'home_team', 'away_team', 'league', 'finished'}
 exclude_keys = {'half_finished', 'current_minutes'}
 sep = '_' * 15
 
@@ -21,13 +21,20 @@ class Analyzer(object):
         :param matches: Local de arquivamento dos dados das partidas.
         """
         self.matches = matches
+        self.live_matches = 0
         self.locked = False
-#       self.telegram = Bot(self)
-#        self.telegram.run_bot()
+        self.telegram = Bot(self)
+        self.telegram.run_bot()
 
-    def lock(self):
-        """Trava o upload de dados ao DropBox."""
+    def send_message(self, msg):
+        self.telegram.send_message(self.telegram.updater, msg)
 
+    def lock(self, n):
+        """Trava o upload de dados ao DropBox.
+        :param n: O número de partidas ao vivo em análise.
+        """
+
+        self.live_matches = n
         self.locked = True
 
     def unlock(self):
@@ -39,14 +46,16 @@ class Analyzer(object):
         """Checa e salva os arquivos.
         :param match: Os dados retirados pelo scraper.
         """
-        match_id = match['match_id']
+        match_id = str(match['match_id'])
         minute = str(match['current_minutes'])
         m = self.matches.get(match_id, False)
         if math.remainder(int(minute), 5) == 0:
             if not m:
                 self.matches[match_id] = {}
                 m = self.matches[match_id]
-            self.save_data(m, minute, match)
+                self.save_data(m, minute, match)
+            elif m['finished'] == "False":
+                self.save_data(m, minute, match)
 
     def save_data(self, data, minute, match):
         """Adiciona os dados da partida à variável matches.
@@ -54,7 +63,8 @@ class Analyzer(object):
         :param minute: O minuto de recorte da partida.
         :param match: Todos os dados da partida.
         """
-        if (minute not in end_times) or (match['half_finished'] is True):
+        half_finished = (match['half_finished'] is True)
+        if (minute not in end_times) or half_finished:
             for key, value in match.items():
                 if key != 'match_id':
                     if key == 'handicap':
@@ -69,3 +79,5 @@ class Analyzer(object):
                             data[minute] = {}
                         if (key not in former_keys) and (key not in exclude_keys):
                             data[minute][key] = match[key]
+            if half_finished and (minute == "90"):
+                data['finished'] = "True"
