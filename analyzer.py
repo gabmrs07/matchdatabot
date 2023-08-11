@@ -23,17 +23,17 @@ class Analyzer(object):
         self.matches = matches
         self.live_matches = 0
         self.locked = False
-        try:
-            self.telegram = Bot(self)
-            self.telegram.run_bot()
-        except Exception as ex:
-            print(ex, ex.args)
+#        try:
+ #           self.telegram = Bot(self)
+  #          self.telegram.run_bot()
+   #     except Exception as ex:
+    #        print(ex, ex.args)
 
-    def send_message(self, msg):
-        try:
-            self.telegram.send_message(self.telegram.updater, msg)
-        except Exception as ex:
-            print(ex, ex.args)
+#    def send_message(self, msg):
+ #       try:
+  #          self.telegram.send_message(self.telegram.updater, msg)
+   #     except Exception as ex:
+    #        print(ex, ex.args)
 
     def lock(self, n):
         """Trava o upload de dados ao DropBox.

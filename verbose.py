@@ -50,7 +50,7 @@ class Verbose(object):
         """
         msg = f"Cornerbot Info:\n\n{self.get_stats(analyzer.matches)}\n\n" \
               f"Partidas em análise: {analyzer.live_matches}"
-        analyzer.send_message(msg)
+#        analyzer.send_message(msg)
 
     def end(self, dt, matches):
         """Finaliza uma rodada.
