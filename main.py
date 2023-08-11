@@ -16,10 +16,10 @@ live_url = 'https://www.totalcorner.com/match/today/'
 ended_url = 'https://www.totalcorner.com/match/today/ended'
 
 
-#def notify(analyzer, verbose, seconds=3600):
-  #  while True:
- #       time.sleep(seconds)
-#        verbose.telegram_info(analyzer)
+def notify(analyzer, verbose, seconds=3600):
+    while True:
+        time.sleep(seconds)
+        verbose.telegram_info(analyzer)
 
 def background_ended_matches(analyzer, seconds=600):
     while True:
@@ -95,8 +95,8 @@ if __name__ == '__main__':
     ended_thread = Thread(target=background_ended_matches, args=[analyzer])
     ended_thread.start()
     verb = Verbose()
-#    telegram_info_thread = Thread(target=notify, args=[analyzer, verb])
- #   telegram_info_thread.start()
+    telegram_info_thread = Thread(target=notify, args=[analyzer, verb])
+    telegram_info_thread.start()
 
     while True:
         try:
